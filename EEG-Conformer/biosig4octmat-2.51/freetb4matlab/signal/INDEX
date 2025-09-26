@@ -1,0 +1,177 @@
+$SPCTOOLS= in spline directory of Dennis Brown's <a href="ftp://svr-ftp.eng.cam.ac.uk/pub/comp.speech/tools/spctools">SPCtools</a>
+$TFTB= try <a href="http://www-isis.enst.fr/Applications/tftb/iutsn.univ-nantes.fr/auger/tftb.html">Time-Frequency Tool box</a>
+
+signal >> Signal processing
+Signals
+ diric 
+ gauspuls 
+ gmonopuls
+ pulstran 
+ tripuls 
+ rectpuls 
+ sawtooth 
+ square 
+ chirp 
+ vco modulate demod= $TFTB
+ strips 
+ specgram 
+ buffer
+ mexihat
+ meyeraux
+ morlet
+ shanwavf
+ cmorwavf
+Filtering
+ filtfilt 
+ filtic 
+ latcfilt 
+ sgolayfilt 
+ sosfilt 
+ medfilt1 
+Filter analysis
+ freqs freqs_plot
+ freqspace 
+ grpdelay 
+ impz 
+ zplane 
+ fwhm
+Filter conversion
+ ac2poly 
+ poly2ac 
+ ac2rc 
+ rc2ac 
+ poly2rc 
+ rc2poly 
+ convmtx 
+ latc2tf 
+ residuez 
+ residued
+ sos2ss 
+ sos2tf 
+ sos2zp 
+ ss2sos 
+ tf2latc 
+ tf2sos 
+ zp2sos 
+ polystab 
+IIR Filter design
+ besself 
+ butter 
+ cheby1 
+ cheby2 
+ ellip
+ ncauer
+ maxflat 
+ buttord 
+ cheb1ord 
+ cheb2ord 
+ ellipord 
+ besselap 
+ sftrans
+ bilinear 
+ impinvar 
+ ellipdemo
+FIR filter design
+ fir1 
+ fir2 
+ fircls 
+ fircls1 
+ firls 
+ firrcos 
+ intfilt 
+ kaiserord 
+ cremez 
+ remez 
+ remezord 
+ sgolay 
+ qp_kaiser
+ cl2bp
+Transforms
+ czt 
+ dctmtx 
+ dct2 
+ idct2 
+ dct 
+ idct
+ dst
+ idst
+ dftmtx 
+ hilbert 
+ rceps 
+ cceps 
+ icceps 
+ cplxreal
+ bitrevorder
+ dwt
+ fht
+ ifht
+Power spectrum analysis
+ pwelch 
+ tfe 
+ tfestimate 
+ cohere 
+ csd 
+ ar_psd
+ cpsd
+ mscohere
+ pburg 
+ pcov pmcov pmtm pmusic= $SPCTOOLS
+ pyulear 
+ xcorr
+ xcorr2 
+ xcov 
+ __power
+Window functions
+ window
+ barthannwin
+ blackmanharris
+ blackmannuttall
+ bohmanwin
+ boxcar 
+ chebwin flattopwin
+ hann
+ kaiser 
+ nuttallwin
+ triang 
+ gaussian gausswin
+ tukeywin
+ rectwin
+ welchwin
+ parzenwin
+System identification
+ arburg 
+ arcov= use <code>ar_covar</code> $SPCTOOLS
+ armcov= use <code>ar_mdcov</code> $SPCTOOLS
+ prony= use <code>ar_prony</code> $SPCTOOLS
+ aryule 
+ invfreq
+ invfreqs 
+ invfreqz 
+ levinson
+ lpc 
+ rlevinson 
+ stmcb 
+Sample rate change
+ decimate 
+ interp 
+ downsample
+ upsample
+ resample 
+ upfirdn 
+Compatibility
+ buttap= use <f>butter</f><code>(n,1,'s')</code>
+ cheb1ap= use <f>cheby1</f><code>(n,Rp,1,'s')</code>
+ cheb2ap= use <f>cheby2</f><code>(n,Rs,1,'s')</code>
+ ellipap= use <f>ellip</f><code>(n,Rp,Rs,1,'s')</code>
+ lp2bp= use <f>sftrans</f>
+ lp2bs= use <f>sftrans</f>
+ lp2hp= use <f>sftrans</f>
+ lp2lp= use <f>sftrans</f>
+ yulewalk=use <f>yulewalker</f>
+Utility
+ buffer
+ fracshift
+ wkeep
+ wrev
+ zerocrossing
+ sampled2continuous

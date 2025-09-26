@@ -1,0 +1,9 @@
+
+
+4-May-2010
+oct2mat:
+    blah ( blah1 <NEWLINE> blah2) -> blah ( blah1 ...<NEWLINE> blah2) 
+    replace use of obsolete functions like t_cdf, is_matrix
+    About 30 functions (mostly in statistics/distribution but also in statistics/tests and general)
+    should benefit from this change. 
+

@@ -1,0 +1,267 @@
+
+
+%# -*- texinfo -*-
+%# @deftypefn {Function File} {@var{vi} =} interpn (@var{x1}, @var{x2}, @dots{}, @var{v}, @var{y1}, @var{y2}, @dots{})
+%# @deftypefnx {Function File} {@var{vi} =} interpn (@var{v}, @var{y1}, @var{y2}, @dots{})
+%# @deftypefnx {Function File} {@var{vi} =} interpn (@var{v}, @var{m})
+%# @deftypefnx {Function File} {@var{vi} =} interpn (@var{v})
+%# @deftypefnx {Function File} {@var{vi} =} interpn (@dots{}, @var{method})
+%# @deftypefnx {Function File} {@var{vi} =} interpn (@dots{}, @var{method}, @var{extrapval})
+%#
+%# Perform @var{n}-dimensional interpolation, where @var{n} is at least two. 
+%# Each element of the @var{n}-dimensional array @var{v} represents a value 
+%# at a location given by the parameters @var{x1}, @var{x2}, @dots{}, @var{xn}. 
+%# The parameters @var{x1}, @var{x2}, @dots{}, @var{xn} are either 
+%# @var{n}-dimensional arrays of the same size as the array @var{v} in 
+%# the 'ndgrid' format or vectors.  The parameters @var{y1}, etc. respect a 
+%# similar format to @var{x1}, etc., and they represent the points at which
+%# the array @var{vi} is interpolated.
+%#
+%# If @var{x1}, @dots{}, @var{xn} are omitted, they are assumed to be 
+%# @code{x1 = 1 : size (@var{v}, 1)}, etc.  If @var{m} is specified, then
+%# the interpolation adds a point half way between each of the interpolation 
+%# points.  This process is performed @var{m} times.  If only @var{v} is 
+%# specified, then @var{m} is assumed to be @code{1}.
+%#
+%# Method is one of:
+%#
+%# @table @asis
+%# @item 'nearest'
+%# Return the nearest neighbor.
+%# @item 'linear'
+%# Linear interpolation from nearest neighbors.
+%# @item 'cubic'
+%# Cubic interpolation from four nearest neighbors (not implemented yet).
+%# @item 'spline'
+%# Cubic spline interpolation--smooth first and second derivatives
+%# throughout the curve.
+%# @end table
+%#
+%# The default method is 'linear'.
+%#
+%# If @var{extrapval} is the scalar value, use it to replace the values
+%# beyond the endpoints with that number.  If @var{extrapval} is missing,
+%# assume NA.
+%# @seealso{interp1, interp2, spline, ndgrid}
+%# @end deftypefn
+
+function vi = interpn (varargin)
+
+  method = 'linear';
+  extrapval = NA;
+  nargs = nargin;
+
+  if (nargin < 1)
+    print_usage ;
+  end
+
+  if (ischar (varargin{end}))
+    method = varargin{end};
+    nargs = nargs - 1;
+  elseif (ischar (varargin{end - 1}))
+    if (~ isnumeric (varargin{end}) || ~ isscalar (varargin{end}))
+      error ('interpn: extrapal is expected to be a numeric scalar');
+    end
+    method = varargin{end - 1};
+    extrapval = varargin{end};
+    nargs = nargs - 2;
+  end
+
+  if (nargs < 3)
+    v = varargin{1};
+    m = 1;
+    if (nargs == 2)
+      m = varargin{2};
+      if (~ isnumeric (m) || ~ isscalar (m) || floor (m) ~= m)
+        error ('interpn: m is expected to be a integer scalar');
+      end
+    end
+    sz = size (v);
+    nd = ndims (v);
+    x = cell (1, nd);
+    y = cell (1, nd);
+    for i = 1 : nd;
+      x{i} = 1 : sz(i);
+      y{i} = 1 : (1 / (2 ^ m)) : sz(i);
+    end
+  elseif (~ isvector (varargin{1}) && nargs == (ndims (varargin{1}) + 1))
+    v = varargin{1};
+    sz = size (v);
+    nd = ndims (v);
+    x = cell (1, nd);
+    y = varargin (2 : nargs);
+    for i = 1 : nd;
+      x{i} = 1 : sz(i);
+    end
+  elseif (rem (nargs, 2) == 1 && nargs ==  
+          (2 * ndims (varargin{ceil (nargs / 2)})) + 1)
+    nv = ceil (nargs / 2);
+    v = varargin{nv};
+    sz = size (v);
+    nd = ndims (v);
+    x = varargin (1 : (nv - 1));
+    y = varargin ((nv + 1) : nargs);
+  else
+    error ('interpn: wrong number or incorrectly formatted input arguments');
+  end
+
+  if (any (~ cellfun (@isvector, x)))
+    for i = 2 : nd
+      if (~ size_equal (x{1}, x{i}) || ~ size_equal (x{i}, v))
+        error ('interpn: dimensional mismatch');
+      end
+      idx (1 : nd) = {1};
+      idx (i) = ':';
+      o2m_tmp_1 = (idx{:});
+x{i} = x{i}o2m_tmp_1(:);
+    end
+    idx (1 : nd) = {1};
+    idx (1) = ':';
+    o2m_tmp_2 = (idx{:});
+x{1} = x{1}o2m_tmp_2(:);
+  end
+
+  method = lower (method);
+
+  if (strcmp (method, 'linear'))
+    vi = o2m_tmp___lin_interpn__ (x{:}, v, y{:});
+    vi (isna (vi)) = extrapval;
+  elseif (strcmp (method, 'nearest'))
+    yshape = size (y{1});
+    yidx = cell (1, nd);
+    for i = 1 : nd
+      y{i} = reshape(y{i},[],1);
+      yidx{i} = lookup (x{i}, y{i}, 'lr');
+    end
+    idx = cell (1,nd);
+    for i = 1 : nd
+      idx{i} = yidx{i} + (y{i} - x{i}(yidx{i}) >= x{i}(yidx{i} + 1) - y{i});
+    end
+    vi = v (sub2ind (sz, idx{:}));
+    idx = zeros (prod(yshape),1);
+    for i = 1 : nd
+      idx = idx | (y{i} < min (x{i}(:)) | y{i} > max (x{i}(:)));
+    end
+    vi(idx) = extrapval;
+    vi = reshape (vi, yshape); 
+  elseif (strcmp (method, 'spline'))
+    if (any (~ cellfun (@isvector, y)))
+      for i = 2 : nd
+        if (~ size_equal (y{1}, y{i}))
+          error ('interpn: dimensional mismatch');
+        end
+        idx (1 : nd) = {1};
+        idx (i) = ':';
+        y{i} = y{i}(idx{:});
+      end
+      idx (1 : nd) = {1};
+      idx (1) = ':';
+      y{1} = y{1}(idx{:});
+    end
+
+    vi = o2m_tmp___splinen__ (x, v, y, extrapval, 'interpn');
+
+    if (size_equal (y{:}))
+      ly = length (y{1});
+      idx = cell (1, ly);
+      q = cell (1, nd);
+      for i = 1 : ly
+        q(:) = i;
+        idx {i} = q;
+      end
+      vi = vi (cellfun (@(x) sub2ind (size(vi), x{:}), idx));
+      vi = reshape (vi, size(y{1}));
+    end
+  elseif (strcmp (method, 'cubic')) 
+    error ('interpn: cubic interpolation not yet implemented');
+  else
+    error ('interpn: unrecognized interpolation method');
+  end
+
+
+
+%!demo
+%! A=[13,-1,12;5,4,3;1,6,2];
+%! x=[0,1,4]; y=[10,11,12];
+%! xi=linspace(min(x),max(x),17);
+%! AI=linspace(min(y),max(y),26)';
+%! mesh(xi,yi,interpn(x,y,A.',xi,yi,"linear").');
+%! [x,y] = meshgrid(x,y); 
+%! hold on; plot3(x(:),y(:),A(:),'b*'); hold off;
+
+%!demo
+%! A=[13,-1,12;5,4,3;1,6,2];
+%! x=[0,1,4]; y=[10,11,12];
+%! xi=linspace(min(x),max(x),17);
+%! yi=linspace(min(y),max(y),26)';
+%! mesh(xi,yi,interpn(x,y,A.',xi,yi,"nearest").');
+%! [x,y] = meshgrid(x,y); 
+%! hold on; plot3(x(:),y(:),A(:),'b*'); hold off;
+
+%!#demo
+%! A=[13,-1,12;5,4,3;1,6,2];
+%! x=[0,1,2]; y=[10,11,12];
+%! xi=linspace(min(x),max(x),17);
+%! yi=linspace(min(y),max(y),26)';
+%! mesh(xi,yi,interpn(x,y,A.',xi,yi,"cubic").');
+%! [x,y] = meshgrid(x,y); 
+%! hold on; plot3(x(:),y(:),A(:),'b*'); hold off;
+
+%!demo
+%! A=[13,-1,12;5,4,3;1,6,2];
+%! x=[0,1,2]; y=[10,11,12];
+%! xi=linspace(min(x),max(x),17);
+%! yi=linspace(min(y),max(y),26)';
+%! mesh(xi,yi,interpn(x,y,A.',xi,yi,"spline").');
+%! [x,y] = meshgrid(x,y); 
+%! hold on; plot3(x(:),y(:),A(:),'b*'); hold off;
+
+
+%!demo
+%! x = y = z = -1:1;
+%! f = @(x,y,z) x.^2 - y - z.^2;
+%! [xx, yy, zz] = meshgrid (x, y, z);
+%! v = f (xx,yy,zz);
+%! xi = yi = zi = -1:0.1:1;
+%! [xxi, yyi, zzi] = ndgrid (xi, yi, zi);
+%! vi = interpn(x, y, z, v, xxi, yyi, zzi, 'spline');
+%! mesh (yi, zi, squeeze (vi(1,:,:)));
+
+
+%!test
+%! [x,y,z] = ndgrid(0:2);
+%! f = x+y+z;
+%! assert (interpn(x,y,z,f,[.5 1.5],[.5 1.5],[.5 1.5]), [1.5, 4.5])
+%! assert (interpn(x,y,z,f,[.51 1.51],[.51 1.51],[.51 1.51],'nearest'), [3, 6])
+%! assert (interpn(x,y,z,f,[.5 1.5],[.5 1.5],[.5 1.5],'spline'), [1.5, 4.5])
+%! assert (interpn(x,y,z,f,x,y,z), f)
+%! assert (interpn(x,y,z,f,x,y,z,'nearest'), f)
+%! assert (interpn(x,y,z,f,x,y,z,'spline'), f)
+
+%!test
+%! [x,y,z] = ndgrid(0:2);
+%! f = x.^2+y.^2+z.^2;
+%! assert (interpn(x,y,-z,f,1.5,1.5,-1.5), 7.5)
+
+%!test % for Matlab-compatible rounding for 'nearest'
+%! X = meshgrid (1:4);
+%! assert (interpn (X, 2.5, 2.5, 'nearest'), 3);
+
+
+%# Copyright (C) 2007, 2008, 2009 David Bateman
+%#
+%# This file is part of Octave.
+%#
+%# Octave is free software; you can redistribute it and/or modify it
+%# under the terms of the GNU General Public License as published by
+%# the Free Software Foundation; either version 3 of the License, or (at
+%# your option) any later version.
+%#
+%# Octave is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%#
+%# You should have received a copy of the GNU General Public License
+%# along with Octave; see the file COPYING.  If not, see
+%# <http://www.gnu.org/licenses/>.

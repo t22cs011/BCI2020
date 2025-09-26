@@ -1,0 +1,81 @@
+
+
+%# -*- texinfo -*-
+%#
+%# @deftypefn {Function File} {@var{x0}} = zerocrossing (@var{x}, @
+%# @var{y})
+%# Estimates the points at which a given waveform y=y(x) crosses the
+%# x-axis using linear interpolation.
+%# @seealso{fzero, roots}
+%# @end deftypefn
+
+
+%# Author: Carlo de Falco <carlo.defalco@gmail.com>
+%# Created: 2008-12-05
+
+function  retval  = zerocrossing (x,y)
+
+  x = x(:);y = y(:);
+  crossing_intervals = (y(1:end-1).*y(2:end) <= 0);
+  fci = find(crossing_intervals);
+  left_ends = (x(fci);
+  right_ends = (x(fci+1);
+  left_vals = (y(fci);
+  right_vals = (y(fci+1);
+  mid_points = (left_ends+right_ends)/2;
+  zero_intervals = find(left_vals==right_vals);
+  retval1 = mid_points(zero_intervals);
+  left_ends(zero_intervals) = [];
+  right_ends(zero_intervals) = [];
+  left_vals(zero_intervals) = [];
+  right_vals(zero_intervals) = [];
+  retval2=left_ends-(right_ends-left_ends).*left_vals./(right_vals-left_vals);
+  retval = union(retval1,retval2);
+
+
+
+%!test
+%! x = linspace(0,1,100);
+%! y = rand(1,100)-0.5;
+%! x0= zerocrossing(x,y);
+%! y0 = interp1(x,y,x0);
+%! assert(norm(y0,inf), 0, 100*eps)
+
+%!test
+%! x = linspace(0,1,100);
+%! y = rand(1,100)-0.5;
+%! y(10:20) = 0;
+%! x0= zerocrossing(x,y);
+%! y0 = interp1(x,y,x0);
+%! assert(norm(y0,inf), 0, 100*eps)
+
+%!demo
+%! x = linspace(0,1,100);
+%! y = rand(1,100)-0.5;
+%! x0= zerocrossing(x,y);
+%! y0 = interp1(x,y,x0);
+%! plot(x,y,x0,y0,'x')
+
+%!demo
+%! x = linspace(0,1,100);
+%! y = rand(1,100)-0.5;
+%! y(10:20) = 0;
+%! x0= zerocrossing(x,y);
+%! y0 = interp1(x,y,x0);
+%! plot(x,y,x0,y0,'x')
+
+%# Copyright (C) 2008 Carlo de Falco
+%# 
+%# This program is free software; you can redistribute it and/or modify
+%# it under the terms of the GNU General Public License as published by
+%# the Free Software Foundation; either version 2 of the License, or
+%# (at your option) any later version.
+%# 
+%# This program is distributed in the hope that it will be useful,
+%# but WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%# GNU General Public License for more details.
+%# 
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA

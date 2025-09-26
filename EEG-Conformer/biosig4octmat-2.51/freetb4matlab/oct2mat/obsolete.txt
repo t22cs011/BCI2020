@@ -1,0 +1,24 @@
+x=floor(randn(1000000,1)*100); 
+
+
+
+addpath /home/as/matlab/NaN/inst
+tic,median(x),t(1)=toc;
+tic,quantile(histo3(x),.5),t(2)=toc
+rmpath /home/as/matlab/NaN/inst
+
+tic,median(x),t(3)=toc;
+tic,quantile(histo3(x),.5),t(4)=toc
+addpath /home/as/matlab/NaN/inst
+
+x=1:4;y=5:8;
+N=1e6;
+s = zeros(1,2);
+tic,
+for k=1:N;
+#    s=(x-y)(1:2);
+    s=(x(1:2)-y(1:2));
+end; 
+toc
+
+
