@@ -132,14 +132,15 @@ class ResidualAdd(nn.Module):
         x += res
         return x
 
-
+#two fully-connected feed-forward layers are connected behind to enhance the fitting ability
+#
 class FeedForwardBlock(nn.Sequential):
     def __init__(self, emb_size, expansion, drop_p):
         super().__init__(
-            nn.Linear(emb_size, expansion * emb_size),
-            nn.GELU(),
-            nn.Dropout(drop_p),
-            nn.Linear(expansion * emb_size, emb_size),
+            nn.Linear(emb_size, expansion * emb_size), #Expands the input feature vector into a higher-dimensional space
+            nn.GELU(), #Introduces non-linearity to allow the model to learn more complex patterns.
+            nn.Dropout(drop_p), #Prevents overfitting by randomly dropping out some neurons.
+            nn.Linear(expansion * emb_size, emb_size), #Contracts the high-dimensional vector back down to its original size.
         )
 
 
