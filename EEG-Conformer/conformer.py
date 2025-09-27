@@ -32,10 +32,10 @@ from torchsummary import summary
 import torch.autograd as autograd
 from torchvision.models import vgg19
 
-import torch.nn as nn
-import torch.nn.functional as F
-import torch
-import torch.nn.init as init
+import torch.nn as nn # import pytorch nn module as nn
+import torch.nn.functional as F # import pytorch nn functional module as F
+import torch # import pytorch module as torch
+import torch.nn.init as init # import pytorch nn init module as init
 
 from torch.utils.data import Dataset
 from PIL import Image
